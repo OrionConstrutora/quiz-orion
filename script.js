@@ -76,6 +76,7 @@ function answerIncome(isOk) {
     leadData.incomeOk = isOk;
     if(!isOk) {
         updateProgress(100);
+        enviarLead('DESQUALIFICADO');
         showResult('step-disqualified', 2);
     } else {
         updateProgress(80);
@@ -86,11 +87,33 @@ function answerIncome(isOk) {
 function answerEntry(isOk) {
     leadData.entryOk = isOk;
     updateProgress(100);
+    const resultado = isOk ? 'QUALIFICADO' : 'DESQUALIFICADO';
+    enviarLead(resultado);
     if(!isOk) {
         showResult('step-disqualified', 3);
     } else {
         showResult('step-success', 3);
     }
+}
+
+// Envia respostas do quiz para o backend (Kommo CRM)
+function enviarLead(resultado) {
+    const payload = {
+        nome:        leadData.name,
+        telefone:    leadData.phone,
+        tem_terreno: leadData.hasTerrain,
+        renda_ok:    leadData.incomeOk,
+        entrada_ok:  leadData.entryOk,
+        resultado:   resultado
+    };
+    fetch('https://orion-construtora-production.up.railway.app/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(d => console.log('Lead enviado:', d))
+    .catch(e => console.warn('Erro ao enviar lead:', e));
 }
 
 function showResult(resultId, currentStep) {
