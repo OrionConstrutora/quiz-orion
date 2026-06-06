@@ -1,10 +1,14 @@
+const BACKEND = 'https://orion-construtora-production.up.railway.app';
+
 let leadData = {
     hasTerrain: null,
     name: '',
     phone: '',
     incomeOk: null,
-    entryOk: null
+    entryOk: null,
+    leadId: null,      // ID do lead criado no Kommo
 };
+
 
 // Start progress at 15% (Initial Step)
 updateProgress(15);
@@ -40,7 +44,7 @@ function nextStep(current, next) {
     if(current === 1) {
         const nameInput = document.getElementById('lead-name').value.trim();
         const phoneInput = document.getElementById('lead-phone').value.trim();
-        
+
         if(!nameInput || phoneInput.length < 14) {
             alert('Por favor, preencha seu nome e um número de WhatsApp válido.');
             return;
@@ -48,6 +52,9 @@ function nextStep(current, next) {
         leadData.name = nameInput;
         leadData.phone = phoneInput;
         updateProgress(55);
+
+        // Cria lead em "Acompanhar" imediatamente
+        iniciarLead();
     }
 
     const currentEl = document.getElementById(`step${current}`);
@@ -96,24 +103,45 @@ function answerEntry(isOk) {
     }
 }
 
-// Envia respostas do quiz para o backend (Kommo CRM)
-function enviarLead(resultado) {
-    const payload = {
-        nome:        leadData.name,
-        telefone:    leadData.phone,
-        tem_terreno: leadData.hasTerrain,
-        renda_ok:    leadData.incomeOk,
-        entrada_ok:  leadData.entryOk,
-        resultado:   resultado
-    };
-    fetch('https://orion-construtora-production.up.railway.app/lead', {
+// 1. Cria lead em "Acompanhar" ao preencher nome+telefone
+function iniciarLead() {
+    fetch(`${BACKEND}/lead/init`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+            nome:        leadData.name,
+            telefone:    leadData.phone,
+            tem_terreno: leadData.hasTerrain,
+        })
     })
     .then(r => r.json())
-    .then(d => console.log('Lead enviado:', d))
-    .catch(e => console.warn('Erro ao enviar lead:', e));
+    .then(d => {
+        if(d.lead_id) {
+            leadData.leadId = d.lead_id;
+            console.log('Lead iniciado:', d.lead_id);
+        }
+    })
+    .catch(e => console.warn('Erro ao iniciar lead:', e));
+}
+
+// 2. Atualiza lead com resultado final (Qualificado ou Perdido)
+function enviarLead(resultado) {
+    fetch(`${BACKEND}/lead/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            lead_id:     leadData.leadId,
+            nome:        leadData.name,
+            telefone:    leadData.phone,
+            tem_terreno: leadData.hasTerrain,
+            renda_ok:    leadData.incomeOk,
+            entrada_ok:  leadData.entryOk,
+            resultado:   resultado,
+        })
+    })
+    .then(r => r.json())
+    .then(d => console.log('Lead concluído:', d))
+    .catch(e => console.warn('Erro ao concluir lead:', e));
 }
 
 function showResult(resultId, currentStep) {
