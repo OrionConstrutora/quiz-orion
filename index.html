@@ -5,19 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orion Construções | Exclusividade & Alto Padrão</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Playfair Display para títulos luxuosos e Inter para corpo limpo -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- ─── META PIXEL ─────────────────────────────────────── -->
+    <script>
+    // 1. Captura fbclid da URL e salva como cookie _fbc (padrão Meta)
+    (function() {
+        var url  = new URL(window.location.href);
+        var fbcl = url.searchParams.get('fbclid');
+        if (fbcl) {
+            var ts  = Math.floor(Date.now() / 1000);
+            var fbc = 'fb.1.' + ts + '.' + fbcl;
+            var exp = new Date(Date.now() + 90*24*60*60*1000).toUTCString();
+            document.cookie = '_fbc=' + fbc + '; path=/; expires=' + exp + '; SameSite=Lax';
+        }
+        // Salva UTMs em sessionStorage para uso no script.js
+        ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){
+            var v = url.searchParams.get(k);
+            if (v) sessionStorage.setItem(k, v);
+        });
+    })();
+
+    // 2. Pixel base — sem advanced matching ainda (dados do usuário chegam no step1)
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    fbq('init', '1327948448428782');
+    fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+             src="https://www.facebook.com/tr?id=1327948448428782&ev=PageView&noscript=1"/>
+    </noscript>
+    <!-- ─── FIM META PIXEL ────────────────────────────────── -->
 </head>
 <body>
     <div class="background-overlay"></div>
-    
+
     <div class="quiz-container">
-        <!-- Barra de Progresso Dourada -->
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
 
-        <!-- Cabeçalho Alto Padrão -->
         <header class="quiz-header">
             <h1 class="logo">
                 <svg width="60" height="40" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 10px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">
@@ -35,7 +70,7 @@
                 <button class="btn-option" onclick="selectTerrain(true)">Sim, possuo terreno</button>
                 <button class="btn-option" onclick="selectTerrain(false)">Ainda não possuo</button>
             </div>
-            
+
             <div id="lead-form" class="hidden form-animate">
                 <p class="subtitle">Excelente. Para iniciarmos sua jornada, por favor, insira seus dados:</p>
                 <input type="text" id="lead-name" placeholder="Seu nome completo" required>
@@ -62,7 +97,7 @@
             </div>
         </div>
 
-        <!-- Sucesso (Lead Qualificado) -->
+        <!-- Sucesso -->
         <div id="step-success" class="quiz-step hidden result-step">
             <h2 class="success-text">Projeto Aprovado</h2>
             <p>Parabéns. Você possui os pré-requisitos para iniciarmos o projeto da sua nova residência de alto padrão.</p>
@@ -70,7 +105,7 @@
             <button class="btn-primary btn-pulse" onclick="redirectToWhatsApp()">Falar com o Diretor</button>
         </div>
 
-        <!-- Rejeição (Lead Não Qualificado) -->
+        <!-- Rejeição -->
         <div id="step-disqualified" class="quiz-step hidden result-step">
             <h2 class="reject-text">Agradecemos o interesse</h2>
             <p>No momento, o portfólio da Orion Construções é otimizado para um perfil de investimento específico.</p>
@@ -78,7 +113,7 @@
             <button class="btn-secondary" onclick="location.reload()">Voltar ao início</button>
         </div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
