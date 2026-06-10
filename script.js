@@ -92,7 +92,6 @@ function pixelUserData() {
 /** Parâmetros custom_data padrão para todos os eventos */
 function customData(extra = {}) {
     return {
-        content_ids     : [CONTENT_ID],
         content_category: 'Imóveis Alto Padrão',
         currency        : CURRENCY,
         ...extra,
@@ -161,6 +160,35 @@ function nextStep(current, next) {
 
         // Backend: cria lead Kommo em "Acompanhar" + CAPI Lead server-side
         iniciarLead(eidLead);
+
+        // ── EVENTO: InitiateCheckout — avançou para qualificação ────────────
+        // Dispara junto com Lead para maximizar volume de dados ao algoritmo.
+        const eidIC = uuid();
+        fbq('track', 'InitiateCheckout', customData({
+            content_name: 'Quiz Orion — Iniciou Qualificação',
+            value       : VALUE_LEAD,
+        }), { eventID: eidIC });
+
+        // CAPI InitiateCheckout server-side
+        fetch(`${BACKEND}/lead/capi`, {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify({
+                event_name       : 'InitiateCheckout',
+                event_id         : eidIC,
+                lead_id          : null,
+                nome             : leadData.name,
+                telefone         : leadData.phone,
+                email            : leadData.email,
+                external_id      : leadData.externalId,
+                event_source_url : PAGE_URL,
+                fbc              : getCookie('_fbc') || '',
+                fbp              : getCookie('_fbp') || '',
+                user_agent       : navigator.userAgent,
+                value            : VALUE_LEAD,
+                currency         : CURRENCY,
+            }),
+        }).catch(() => {});
     }
 
     const cur = document.getElementById(`step${current}`);
@@ -184,21 +212,37 @@ function answerIncome(isOk) {
     leadData.incomeOk = isOk;
     if (!isOk) {
         updateProgress(100);
-        // ── EVENTO: SubmitApplication (quiz concluído — desclassificado na renda)
+        // ── EVENTO: SubmitApplication (desqualificado na renda)
+        const eidSA1 = uuid();
         fbq('track', 'SubmitApplication', customData({
             content_name: 'Quiz Orion — Não Qualificado (Renda)',
             value       : 0,
-        }), { eventID: uuid() });
+        }), { eventID: eidSA1 });
+
+        // CAPI SubmitApplication server-side
+        fetch(`${BACKEND}/lead/capi`, {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify({
+                event_name       : 'SubmitApplication',
+                event_id         : eidSA1,
+                lead_id          : leadData.leadId,
+                nome             : leadData.name,
+                telefone         : leadData.phone,
+                email            : leadData.email,
+                external_id      : leadData.externalId,
+                event_source_url : PAGE_URL,
+                fbc              : getCookie('_fbc') || '',
+                fbp              : getCookie('_fbp') || '',
+                user_agent       : navigator.userAgent,
+                value            : 0,
+                currency         : CURRENCY,
+            }),
+        }).catch(() => {});
 
         enviarLead('DESQUALIFICADO');
         showResult('step-disqualified', 2);
     } else {
-        // ── EVENTO: InitiateCheckout — avançou para a última etapa
-        fbq('track', 'InitiateCheckout', customData({
-            content_name: 'Quiz Orion — Renda Aprovada',
-            value       : VALUE_LEAD,
-        }), { eventID: uuid() });
-
         updateProgress(80);
         nextStep(2, 3);
     }
@@ -211,10 +255,32 @@ function answerEntry(isOk) {
     const resultado = isOk ? 'QUALIFICADO' : 'DESQUALIFICADO';
 
     // ── EVENTO: SubmitApplication — quiz 100% concluído
+    const eidSA2 = uuid();
     fbq('track', 'SubmitApplication', customData({
         content_name: `Quiz Orion — ${resultado}`,
         value       : isOk ? VALUE_QUALIFICADO : 0,
-    }), { eventID: uuid() });
+    }), { eventID: eidSA2 });
+
+    // CAPI SubmitApplication server-side
+    fetch(`${BACKEND}/lead/capi`, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({
+            event_name       : 'SubmitApplication',
+            event_id         : eidSA2,
+            lead_id          : leadData.leadId,
+            nome             : leadData.name,
+            telefone         : leadData.phone,
+            email            : leadData.email,
+            external_id      : leadData.externalId,
+            event_source_url : PAGE_URL,
+            fbc              : getCookie('_fbc') || '',
+            fbp              : getCookie('_fbp') || '',
+            user_agent       : navigator.userAgent,
+            value            : isOk ? VALUE_QUALIFICADO : 0,
+            currency         : CURRENCY,
+        }),
+    }).catch(() => {});
 
     enviarLead(resultado);
     showResult(isOk ? 'step-success' : 'step-disqualified', 3);
