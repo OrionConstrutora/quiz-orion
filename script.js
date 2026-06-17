@@ -136,8 +136,14 @@ function nextStep(current, next) {
         const phone = document.getElementById('lead-phone').value.trim();
         const email = document.getElementById('lead-email').value.trim();
 
+        const emailInput = document.getElementById('lead-email').value.trim();
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput);
         if (!name || phone.length < 14) {
             alert('Por favor, preencha seu nome e um número de WhatsApp válido.');
+            return;
+        }
+        if (!emailValido) {
+            alert('Por favor, preencha um e-mail válido.');
             return;
         }
 
