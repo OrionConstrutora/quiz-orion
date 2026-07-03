@@ -3,7 +3,7 @@ FROM nginx:alpine
 COPY index.html /usr/share/nginx/html/
 COPY style.css  /usr/share/nginx/html/
 COPY script.js  /usr/share/nginx/html/
-COPY bg-luxury.png /usr/share/nginx/html/
+COPY bg-luxury.jpg /usr/share/nginx/html/
 COPY favicon.ico   /usr/share/nginx/html/
 COPY meta.json     /usr/share/nginx/html/
 
