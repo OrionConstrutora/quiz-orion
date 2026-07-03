@@ -22,7 +22,7 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 20px;
-    background-image: url('bg-luxury.png');
+    background-image: url('bg-luxury.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -289,4 +289,13 @@ input::placeholder {
 @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+.logo-tagline {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 300;
+    color: var(--text-muted);
+    margin-top: 14px;
+    letter-spacing: 1px;
 }
